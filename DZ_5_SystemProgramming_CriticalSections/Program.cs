@@ -15,6 +15,7 @@ namespace DZ_5_SystemProgramming_CriticalSections
 		const int busTimeout = 5000;
 		const int busCapacity = 25;
 		const int cyclesNumber = 24;
+		static bool doWork = true;
 
 
 		private static readonly object LockObj = new object();
@@ -23,18 +24,20 @@ namespace DZ_5_SystemProgramming_CriticalSections
 		static void BusStopWork(ref BusStop _bs,  int _cycls)
 		{
 			Random random = new Random();
-			//int count = _cycls;
+			int count = _cycls;
 			do
 			{
 				lock (LockObj)
 				{
-					int temp = random.Next(1, 25);
+					int temp = random.Next(1, 15);
 					_bs.PassengersCount += temp;
+					Console.WriteLine($"Номер цикла {cyclesNumber-count+1}");
 					Console.WriteLine($"На остановку пришло {temp} пассажиров. Всего на остановке {_bs.PassengersCount} человек");
-					//count--;
+					count--;
 				}
 				Thread.Sleep(passengerRespawn);
-			} while (cyclesNumber > 0);
+			} while (count > 0);
+			doWork = false;
 		}
 
 
@@ -53,7 +56,7 @@ namespace DZ_5_SystemProgramming_CriticalSections
 						Random random = new Random();
 						Console.WriteLine($"Работает поток {Thread.CurrentThread.Name}");
 						tempCount = random.Next(0, tempBusStop.PassengersCount > tempBus.MaxCountPassengers ? tempBus.MaxCountPassengers : tempBusStop.PassengersCount);
-						Console.WriteLine($"Автобус номер {tempBus.BusName} приехал на остановку и забрал {tempCount} человек");
+						Console.WriteLine($"Автобус номер {tempBus.BusName} приехал на остановку и забрал {tempCount} человек ({tempBusStop.PassengersCount} - {tempCount} = {tempBusStop.PassengersCount-tempCount})");
 						tempBusStop.PassengersCount -= tempCount;
 						tempBus.CurrenCountPassengers += tempCount;
 					}
@@ -61,7 +64,7 @@ namespace DZ_5_SystemProgramming_CriticalSections
 					Thread.Sleep(busTimeout);
 				}
 
-			} while (cyclesNumber > 0);
+			} while (doWork);
 		}
 
 
